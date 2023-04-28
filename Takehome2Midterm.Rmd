@@ -1,0 +1,155 @@
+---
+title: "Takehome2Midterm"
+author: "Renata Trevino"
+date: "2023-04-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+```{r}
+Pass2 <- 0.60     # Successful pass
+Shot2 <- 0.55    # Successful shot
+Fouled2 <- 0.10    # fouled shot
+MakeFoul2 <- 0.605  # make foul shot
+
+
+Points2 <- Pass2*Shot2*2 + Pass2*Fouled2*MakeFoul2^2*2 + Pass2*Fouled2*2*MakeFoul2*(1-MakeFoul2)*1
+
+## Probability of winning
+Win2 <- Pass2*Shot2 + Pass2*Fouled2*MakeFoul2^2
+
+## Probability of tie
+Tie2 <- Pass2*Fouled2*2*MakeFoul2*(1-MakeFoul2)
+
+## Probability of loss
+Loss2 <- 1 - (Pass2*Shot2 + Pass2*Fouled2*MakeFoul2^2) - (Pass2*Fouled2*2*MakeFoul2*(1-MakeFoul2))
+
+## Data Frame
+GoFor2.df <- data.frame(Decision = "Go for Two",
+           ProbWin = Win2,
+           ProbTie = Tie2,
+           ProbLoss = Loss2,
+           Points = Points2)
+
+```
+
+
+
+```{r}
+Pass3 <- 0.80      # successful pass
+Shot3 <- 0.3995   # successful shot
+Fouled3 <- 0.05     # fouled shot
+MakeFoul3 <- 0.90    # make foul shot
+
+
+Points3 <- Pass3*Shot3*3 + Pass3*Fouled3*MakeFoul3^3*3 + Pass3*Fouled3*3*MakeFoul3^2*(1-MakeFoul3)*2 + Pass3*Fouled3*3*(1-MakeFoul3)^2*MakeFoul3*1
+
+## Probability of winning
+Win3 <- Pass3*Shot3 + Pass3*Fouled3*MakeFoul3^3 + Pass3*Fouled3*3*MakeFoul3^2*(1-MakeFoul3)
+
+## Probability of tie
+Tie3 <- Pass3*Fouled3*3*MakeFoul3*(1-MakeFoul3)^2
+
+## Probability of loss
+Loss3 <- 1 - (Pass3*Shot3 + Pass3*Fouled3*MakeFoul3^3 + Pass3*Fouled3*3*MakeFoul3^2*(1-MakeFoul3)) - (Pass3*Fouled3*3*MakeFoul3*(1-MakeFoul3)^2)
+
+
+GoFor3.df <- data.frame(Decision = "Go for Three",
+           ProbWin = Win3,
+           ProbTie = Tie3,
+           ProbLoss = Loss3,
+           Points = Points3)
+```
+
+
+```{r}
+GoFor2 <- function(gofor) {
+  inbound <- sample(c(1, 0), prob=c(0.6,0.4), size=1)
+  shotAttempt <- sample(c("made", "fouled", "missed"),
+                        prob=c(0.55, 0.10, 0.35), size=1)
+  if(shotAttempt=="made") {
+    points <- inbound*2
+  } else if(shotAttempt=="missed") {
+    points <- inbound*0
+  } else {  # Fouled
+    points <- inbound*(sample(c(1,0), prob=c(0.605, 0.395), size=1 ) +
+      sample(c(1,0), prob=c(0.605, 0.395), size=1 ))
+  }
+  points
+}
+```
+
+```{r}
+set.seed(30)
+GoFor2()
+GoFor2()
+GoFor2()
+GoFor2()
+GoFor2()
+GoFor2()
+```
+
+
+```{r}
+GoFor3 <- function(gofor) {
+  inbound <- sample(c(1, 0), prob=c(0.8,0.2), size=1)
+  shotAttempt <- sample(c("made", "fouled", "missed"),
+                        prob=c(0.3995, 0.05, 0.5505), size=1)
+  if(shotAttempt=="made") {
+    points <- inbound*3
+  } else if(shotAttempt=="missed") {
+    points <- inbound*0
+  } else {  # Fouled
+    points <- inbound*(sample(c(1,0), prob=c(0.9, 0.1), size=1 ) +
+      sample(c(1,0), prob=c(0.9, 0.1), size=1 ) +
+      sample(c(1,0), prob=c(0.9, 0.1), size=1 ) )
+  }
+  points
+}
+```
+
+
+
+```{r}
+set.seed(35)
+GoFor3()
+GoFor3()
+GoFor3()
+GoFor3()
+```
+
+
+
+```{r}
+set.seed(34)
+points.2 <- sapply(1:1000000, GoFor2)
+
+set.seed(20)
+points.3<- sapply(1:1000000, GoFor3)
+```
+
+
+```{r}
+gofor2.df <- data.frame(Decision="Going for 2",
+                         Out = points.2)
+gofor3.df <- data.frame(Decision="Going for 3",
+                         Out = points.3)
+gofor.df <- bind_rows(gofor2.df, gofor3.df)
+
+
+gofor.df %>%
+  group_by(Decision) %>%
+  summarize(ProbWin = mean(Out > 1),
+            ProbTie = mean(Out ==1),
+            ProbLoss = mean(Out < 1),
+            Points = mean(Out),
+            SD.Points = sd(Out))
+```
+
+**The simulation shows that going for three overall has a slightly higher chance of winning. Also it shows that going for three, you can expect to score more points. The Standard deviation shows the variability of going for 2 or 3 which can help make a clear decision.** 
