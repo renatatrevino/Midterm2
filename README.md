@@ -1,1 +1,2 @@
 # Midterm2
+This problem simulates being in a winner-take-all championship basketball game and are trailing by a single point with 2 seconds to play! Pretend you are the coach and they just called time out and have possession of the ball on the offensive side of the court. You have the opportunity for one more shot. This code helps determine if you should make a 2 or 3 pointer shot. This gives the probability of winning the game for each strategy, and simulates each scenario 100,000 times in order to fully see which option is better. 
